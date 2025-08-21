@@ -30,7 +30,7 @@ contract XARMigration is Ownable2Step {
     IERC20 public immutable AVAIL;
 
     mapping(address => UserDeposit) public deposits;
-    
+
     event Deposit(address indexed user, uint256 amount);
     event Withdraw(address indexed user, uint256 amount);
 

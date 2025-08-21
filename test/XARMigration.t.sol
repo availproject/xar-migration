@@ -66,7 +66,10 @@ contract XARMigrationTest is Test {
     }
 
     function test_depositToTwice(uint248 amount, uint248 amount2, address someone) public {
-        vm.assume(amount != 0 && amount2 != 0 && someone != address(0) && uint256(amount) + uint256(amount2) <= type(uint248).max);
+        vm.assume(
+            amount != 0 && amount2 != 0 && someone != address(0)
+                && uint256(amount) + uint256(amount2) <= type(uint248).max
+        );
         address user = makeAddr("user");
         vm.startPrank(user);
         xar.mint(user, amount + amount2);
@@ -81,8 +84,13 @@ contract XARMigrationTest is Test {
         assertEq(hasUnlockedOnce, false);
     }
 
-    function test_depositToDifferentAddresses(uint248 amount, uint248 amount2, address someone, address someoneElse) public {
-        vm.assume(amount != 0 && amount2 != 0 && someone != address(0) && someoneElse != address(0) && someone != someoneElse && uint256(amount) + uint256(amount2) <= type(uint248).max);
+    function test_depositToDifferentAddresses(uint248 amount, uint248 amount2, address someone, address someoneElse)
+        public
+    {
+        vm.assume(
+            amount != 0 && amount2 != 0 && someone != address(0) && someoneElse != address(0) && someone != someoneElse
+                && uint256(amount) + uint256(amount2) <= type(uint248).max
+        );
         address user = makeAddr("user");
         vm.startPrank(user);
         xar.mint(user, amount + amount2);
@@ -104,7 +112,7 @@ contract XARMigrationTest is Test {
         vm.startPrank(user);
         xar.mint(user, amount);
         xar.approve(address(xarMigration), amount);
-        xarMigration.deposit(amount);  
+        xarMigration.deposit(amount);
         vm.warp(FIRST_UNLOCK_AT);
         avail.mint(address(xarMigration), amount / 8); // 4:1 / 2
         xarMigration.withdraw();
