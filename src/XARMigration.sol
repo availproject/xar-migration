@@ -3,6 +3,7 @@ pragma solidity 0.8.30;
 
 import {IERC20} from "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Pausable} from "lib/openzeppelin-contracts/contracts/utils/Pausable.sol";
 import {Ownable, Ownable2Step} from "lib/openzeppelin-contracts/contracts/access/Ownable2Step.sol";
 
 /// @title XARMigration
@@ -10,7 +11,7 @@ import {Ownable, Ownable2Step} from "lib/openzeppelin-contracts/contracts/access
 /// @notice This contract facilitates the migration of XAR tokens to AVAIL tokens.
 /// @dev This contract allows users to deposit XAR tokens and withdraw AVAIL tokens after a certain period.
 /// @custom:security security@availproject.org
-contract XARMigration is Ownable2Step {
+contract XARMigration is Pausable, Ownable2Step {
     using SafeERC20 for IERC20;
 
     struct UserDeposit {
@@ -45,9 +46,10 @@ contract XARMigration is Ownable2Step {
         require(xar != IERC20(address(0)) && avail != IERC20(address(0)), ZeroAddress());
         XAR = xar;
         AVAIL = avail;
+        _pause();
     }
 
-    function deposit(uint248 amount) external {
+    function deposit(uint248 amount) external whenNotPaused {
         require(block.timestamp < DEPOSIT_DEADLINE, DepositClosed());
         require(amount != 0, ZeroAmount());
         deposits[msg.sender] = UserDeposit(deposits[msg.sender].amount + amount, false);
@@ -55,7 +57,7 @@ contract XARMigration is Ownable2Step {
         XAR.safeTransferFrom(msg.sender, address(this), amount);
     }
 
-    function depositTo(address user, uint248 amount) external {
+    function depositTo(address user, uint248 amount) external whenNotPaused {
         require(block.timestamp < DEPOSIT_DEADLINE, DepositClosed());
         require(amount != 0, ZeroAmount());
         require(user != address(0), ZeroAddress());
@@ -65,7 +67,7 @@ contract XARMigration is Ownable2Step {
         XAR.safeTransferFrom(msg.sender, address(this), amount);
     }
 
-    function withdraw() external {
+    function withdraw() external whenNotPaused {
         require(block.timestamp >= FIRST_UNLOCK_AT, NotYet());
         UserDeposit memory userDeposit = deposits[msg.sender];
         require(userDeposit.amount != 0, InsufficientBalance());
@@ -79,6 +81,14 @@ contract XARMigration is Ownable2Step {
             deposits[msg.sender] = UserDeposit(userDeposit.amount - uint248(unlockAmount), true);
             emit Withdraw(msg.sender, unlockAmount);
             AVAIL.safeTransfer(msg.sender, unlockAmount / XAR_PER_AVAIL);
+        }
+    }
+
+    function setPaused(bool paused) external onlyOwner {
+        if (paused) {
+            _pause();
+        } else {
+            _unpause();
         }
     }
 

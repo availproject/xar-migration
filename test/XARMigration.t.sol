@@ -23,6 +23,8 @@ contract XARMigrationTest is Test {
         avail = new MockERC20("AVAIL", "AVAIL");
         address governance = makeAddr("governance");
         xarMigration = new XARMigration(IERC20(xar), IERC20(avail), governance);
+        vm.prank(governance);
+        xarMigration.setPaused(false);
     }
 
     function test_deposit(uint248 amount) public {
@@ -121,5 +123,49 @@ contract XARMigrationTest is Test {
         assertEq(hasUnlockedOnce, true);
         assertEq(xar.balanceOf(user), 0);
         assertEq(avail.balanceOf(user), amount / 8);
+    }
+
+    function test_depositAndUnlockOnce(uint248 amount) public {
+        vm.assume(amount != 0);
+        vm.warp(DEPOSIT_DEADLINE - 1);
+        address user = makeAddr("user");
+        vm.startPrank(user);
+        xar.mint(user, amount);
+        xar.approve(address(xarMigration), amount);
+        xarMigration.deposit(amount);
+        vm.warp(SECOND_UNLOCK_AT);
+        avail.mint(address(xarMigration), amount / 4); // 4:1 / 2
+        xarMigration.withdraw();
+        (uint248 depositAmount, bool hasUnlockedOnce) = xarMigration.deposits(user);
+        assertEq(depositAmount, 0); // because of integer division
+        assertEq(hasUnlockedOnce, false);
+        assertEq(xar.balanceOf(user), 0);
+        assertEq(avail.balanceOf(user), amount / 4);
+    }
+
+    function test_depositAndUnlockTwice(uint248 amount) public {
+        vm.assume(amount != 0);
+        vm.warp(DEPOSIT_DEADLINE - 1);
+        address user = makeAddr("user");
+        vm.startPrank(user);
+        xar.mint(user, amount);
+        xar.approve(address(xarMigration), amount);
+        xarMigration.deposit(amount);
+        vm.warp(FIRST_UNLOCK_AT);
+        avail.mint(address(xarMigration), amount / 4); // 4:1 / 2
+        xarMigration.withdraw();
+        (uint248 depositAmount, bool hasUnlockedOnce) = xarMigration.deposits(user);
+        assertApproxEqAbs(depositAmount, amount / 2, 1); // because of integer division
+        assertEq(hasUnlockedOnce, true);
+        assertEq(xar.balanceOf(user), 0);
+        assertApproxEqAbs(avail.balanceOf(user), amount / 8, 1);
+        vm.warp(SECOND_UNLOCK_AT);
+        avail.mint(address(xarMigration), amount / 8); // 4:1 / 2
+        xarMigration.withdraw();
+        (depositAmount, hasUnlockedOnce) = xarMigration.deposits(user);
+        assertEq(depositAmount, 0);
+        assertEq(hasUnlockedOnce, false);
+        assertEq(xar.balanceOf(user), 0);
+        assertApproxEqAbs(avail.balanceOf(user), amount / 4, 1);
     }
 }
