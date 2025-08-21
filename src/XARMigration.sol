@@ -20,8 +20,12 @@ contract XARMigration is Ownable2Step {
 
     uint256 private constant XAR_PER_AVAIL = 4;
     uint256 private constant FIRST_UNLOCK_RATIO = 2; // implies 1/2
-    uint256 private immutable SIX_MONTHS = block.timestamp + 180 days;
-    uint256 private immutable ONE_YEAR = block.timestamp + 365 days;
+    /// @dev Fri Feb 27 2026 20:00:00 GMT+0000
+    uint256 private immutable DEPOSIT_DEADLINE = 1772222400;
+    /// @dev Sat Feb 28 2026 20:00:00 GMT+0000
+    uint256 private immutable FIRST_UNLOCK_AT = 1772308800;
+    /// @dev Fri Aug 28 2026 20:00:00 GMT+0000
+    uint256 private immutable SECOND_UNLOCK_AT = 1787947200;
     IERC20 public immutable XAR;
     IERC20 public immutable AVAIL;
 
@@ -44,7 +48,7 @@ contract XARMigration is Ownable2Step {
     }
 
     function deposit(uint248 amount) external {
-        require(block.timestamp < SIX_MONTHS, DepositClosed());
+        require(block.timestamp < DEPOSIT_DEADLINE, DepositClosed());
         require(amount != 0, ZeroAmount());
         deposits[msg.sender] = UserDeposit(deposits[msg.sender].amount + amount, false);
         emit Deposit(msg.sender, amount);
@@ -52,7 +56,7 @@ contract XARMigration is Ownable2Step {
     }
 
     function depositTo(address user, uint248 amount) external {
-        require(block.timestamp < SIX_MONTHS, DepositClosed());
+        require(block.timestamp < DEPOSIT_DEADLINE, DepositClosed());
         require(amount != 0, ZeroAmount());
         require(user != address(0), ZeroAddress());
         UserDeposit memory userDeposit = deposits[user];
@@ -62,16 +66,16 @@ contract XARMigration is Ownable2Step {
     }
 
     function withdraw() external {
-        require(block.timestamp >= SIX_MONTHS, NotYet());
+        require(block.timestamp >= FIRST_UNLOCK_AT, NotYet());
         UserDeposit memory userDeposit = deposits[msg.sender];
         require(userDeposit.amount != 0, InsufficientBalance());
-        if (block.timestamp >= ONE_YEAR) {
+        if (block.timestamp >= SECOND_UNLOCK_AT) {
             deposits[msg.sender] = UserDeposit(0, false);
             emit Withdraw(msg.sender, userDeposit.amount);
             AVAIL.safeTransfer(msg.sender, userDeposit.amount / XAR_PER_AVAIL);
         } else {
             require(!userDeposit.hasUnlockedOnce, AlreadyWithdrawn());
-            uint256 unlockAmount = userDeposit.amount / 2;
+            uint256 unlockAmount = userDeposit.amount / FIRST_UNLOCK_RATIO;
             deposits[msg.sender] = UserDeposit(userDeposit.amount - uint248(unlockAmount), true);
             emit Withdraw(msg.sender, unlockAmount);
             AVAIL.safeTransfer(msg.sender, unlockAmount / XAR_PER_AVAIL);
