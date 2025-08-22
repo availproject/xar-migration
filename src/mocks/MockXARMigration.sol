@@ -9,9 +9,9 @@ import {Ownable, Ownable2Step} from "lib/openzeppelin-contracts/contracts/access
 /// @title XARMigration
 /// @author QEDK <Avail>
 /// @notice This contract facilitates the migration of XAR tokens to AVAIL tokens.
-/// @dev This contract allows users to deposit XAR tokens and withdraw AVAIL tokens after a certain period.
+/// @dev ⚠️ Do not use this in production
 /// @custom:security security@availproject.org
-contract XARMigration is Pausable, Ownable2Step {
+contract MockXARMigration is Pausable, Ownable2Step {
     using SafeERC20 for IERC20;
 
     struct UserDeposit {
@@ -21,12 +21,9 @@ contract XARMigration is Pausable, Ownable2Step {
 
     uint256 private constant XAR_PER_AVAIL = 4;
     uint256 private constant FIRST_UNLOCK_RATIO = 2; // implies 1/2
-    /// @dev Fri Feb 27 2026 20:00:00 GMT+0000
-    uint256 private constant DEPOSIT_DEADLINE = 1772222400;
-    /// @dev Sat Feb 28 2026 20:00:00 GMT+0000
-    uint256 private constant FIRST_UNLOCK_AT = 1772308800;
-    /// @dev Fri Aug 28 2026 20:00:00 GMT+0000
-    uint256 private constant SECOND_UNLOCK_AT = 1787947200;
+    uint256 private immutable DEPOSIT_DEADLINE;
+    uint256 private immutable FIRST_UNLOCK_AT;
+    uint256 private immutable SECOND_UNLOCK_AT;
     IERC20 public immutable xar;
     IERC20 public immutable avail;
 
@@ -44,6 +41,9 @@ contract XARMigration is Pausable, Ownable2Step {
 
     constructor(IERC20 newXar, IERC20 newAvail, address governance) Ownable(governance) {
         require(newXar != IERC20(address(0)) && newAvail != IERC20(address(0)), ZeroAddress());
+        DEPOSIT_DEADLINE = block.timestamp + 2 hours;
+        FIRST_UNLOCK_AT = block.timestamp + 3 hours;
+        SECOND_UNLOCK_AT = block.timestamp + 5 hours;
         xar = newXar;
         avail = newAvail;
         _pause();
@@ -51,7 +51,7 @@ contract XARMigration is Pausable, Ownable2Step {
 
     function deposit(uint248 amount) external whenNotPaused {
         // slither-disable-next-line timestamp
-        require(block.timestamp < DEPOSIT_DEADLINE, DepositClosed());
+        require(block.timestamp <= DEPOSIT_DEADLINE, DepositClosed());
         require(amount != 0, ZeroAmount());
         deposits[msg.sender] = UserDeposit(deposits[msg.sender].amount + amount, false);
         emit Deposit(msg.sender, amount);
@@ -60,7 +60,7 @@ contract XARMigration is Pausable, Ownable2Step {
 
     function depositTo(address user, uint248 amount) external whenNotPaused {
         // slither-disable-next-line timestamp
-        require(block.timestamp < DEPOSIT_DEADLINE, DepositClosed());
+        require(block.timestamp <= DEPOSIT_DEADLINE, DepositClosed());
         require(amount != 0, ZeroAmount());
         require(user != address(0), ZeroAddress());
         UserDeposit memory userDeposit = deposits[user];

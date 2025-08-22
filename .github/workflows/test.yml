@@ -10,19 +10,15 @@ env:
 
 jobs:
   check:
-    name: Foundry project
+    name: Foundry tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-
-      - name: Show Forge version
-        run: |
-          forge --version
 
       - name: Run Forge fmt
         run: |
@@ -38,3 +34,29 @@ jobs:
         run: |
           forge test -vvv
         id: test
+
+  gas-report:
+    name: Gas report
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Run Forge tests
+        run: |
+          forge test --gas-report
+        id: gas-report
+      
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - name: Run Slither
+        run: crytic/slither-action@v0.4.1
+        id: slither
