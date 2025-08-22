@@ -137,7 +137,7 @@ contract XARMigrationTest is Test {
         avail.mint(address(xarMigration), amount / 4); // 4:1 / 2
         xarMigration.withdraw();
         (uint248 depositAmount, bool hasUnlockedOnce) = xarMigration.deposits(user);
-        assertEq(depositAmount, 0); // because of integer division
+        assertEq(depositAmount, 0);
         assertEq(hasUnlockedOnce, false);
         assertEq(xar.balanceOf(user), 0);
         assertEq(avail.balanceOf(user), amount / 4);
