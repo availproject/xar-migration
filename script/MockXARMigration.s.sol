@@ -11,10 +11,15 @@ contract XARMigrationScript is Script {
 
     function run() public {
         vm.startBroadcast();
-        address xar = address(new MockERC20("Mock Arcana", "mockXAR"));
-        address avail = address(new MockERC20("Mock Avail", "mockAVAIL"));
-        xarMigration = new MockXARMigration(IERC20(xar), IERC20(avail), msg.sender);
+        MockERC20 xar = new MockERC20("Mock Arcana", "mockXAR");
+        MockERC20 avail = new MockERC20("Mock Avail", "mockAVAIL");
+        xarMigration = new MockXARMigration(IERC20(address(xar)), IERC20(address(avail)), msg.sender);
         xarMigration.setPaused(false);
+        xar.mint(msg.sender, 100000 ether);
+        avail.mint(address(xarMigration), 100000 ether);
+        xar.approve(address(xarMigration), 20 ether);
+        xarMigration.deposit(10 ether);
+        xarMigration.depositTo(msg.sender, 10 ether);
 
         vm.stopBroadcast();
     }

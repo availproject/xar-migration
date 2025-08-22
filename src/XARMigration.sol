@@ -7,7 +7,7 @@ import {Pausable} from "lib/openzeppelin-contracts/contracts/utils/Pausable.sol"
 import {Ownable, Ownable2Step} from "lib/openzeppelin-contracts/contracts/access/Ownable2Step.sol";
 
 /// @title XARMigration
-/// @author QEDK <Avail>
+/// @author @QEDK (Avail)
 /// @notice This contract facilitates the migration of XAR tokens to AVAIL tokens.
 /// @dev This contract allows users to deposit XAR tokens and withdraw AVAIL tokens after a certain period.
 /// @custom:security security@availproject.org
