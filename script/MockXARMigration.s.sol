@@ -11,8 +11,8 @@ contract XARMigrationScript is Script {
 
     function run() public {
         vm.startBroadcast();
-        MockERC20 xar = new MockERC20("Mock Arcana", "mockXAR");
-        MockERC20 avail = new MockERC20("Mock Avail", "mockAVAIL");
+        MockERC20 xar = MockERC20(vm.envAddress("XAR"));
+        MockERC20 avail = MockERC20(vm.envAddress("AVAIL"));
         xarMigration = new MockXARMigration(IERC20(address(xar)), IERC20(address(avail)), msg.sender);
         xarMigration.setPaused(false);
         xar.mint(msg.sender, 100000 ether);

@@ -1,4 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
+/*                                       __   __   __                         _  _ 
+  __ _  _ __   ___   __ _  _ __    __ _  \ \  \ \  \ \    __ _ __   __  __ _ (_)| |
+ / _` || '__| / __| / _` || '_ \  / _` |  \ \  \ \  \ \  / _` |\ \ / / / _` || || |
+| (_| || |   | (__ | (_| || | | || (_| |  / /  / /  / / | (_| | \ V / | (_| || || |
+ \__,_||_|    \___| \__,_||_| |_| \__,_| /_/  /_/  /_/   \__,_|  \_/   \__,_||_||_|
+*/
 pragma solidity 0.8.30;
 
 import {IERC20} from "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
@@ -21,9 +27,9 @@ contract MockXARMigration is Pausable, Ownable2Step {
 
     uint256 private constant XAR_PER_AVAIL = 4;
     uint256 private constant FIRST_UNLOCK_RATIO = 2; // implies 1/2
-    uint256 private immutable DEPOSIT_DEADLINE;
-    uint256 private immutable FIRST_UNLOCK_AT;
-    uint256 private immutable SECOND_UNLOCK_AT;
+    uint256 private constant DEPOSIT_DEADLINE = 1756152000;
+    uint256 private constant FIRST_UNLOCK_AT = 1756188000;
+    uint256 private constant SECOND_UNLOCK_AT = 1756202400;
     IERC20 public immutable xar;
     IERC20 public immutable avail;
 
@@ -41,9 +47,6 @@ contract MockXARMigration is Pausable, Ownable2Step {
 
     constructor(IERC20 newXar, IERC20 newAvail, address governance) Ownable(governance) {
         require(newXar != IERC20(address(0)) && newAvail != IERC20(address(0)), ZeroAddress());
-        DEPOSIT_DEADLINE = block.timestamp + 2 hours;
-        FIRST_UNLOCK_AT = block.timestamp + 3 hours;
-        SECOND_UNLOCK_AT = block.timestamp + 5 hours;
         xar = newXar;
         avail = newAvail;
         _pause();

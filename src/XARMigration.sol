@@ -1,4 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
+/*                                       __   __   __                         _  _ 
+  __ _  _ __   ___   __ _  _ __    __ _  \ \  \ \  \ \    __ _ __   __  __ _ (_)| |
+ / _` || '__| / __| / _` || '_ \  / _` |  \ \  \ \  \ \  / _` |\ \ / / / _` || || |
+| (_| || |   | (__ | (_| || | | || (_| |  / /  / /  / / | (_| | \ V / | (_| || || |
+ \__,_||_|    \___| \__,_||_| |_| \__,_| /_/  /_/  /_/   \__,_|  \_/   \__,_||_||_|
+*/
 pragma solidity 0.8.30;
 
 import {IERC20} from "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
@@ -14,8 +20,11 @@ import {Ownable, Ownable2Step} from "lib/openzeppelin-contracts/contracts/access
 contract XARMigration is Pausable, Ownable2Step {
     using SafeERC20 for IERC20;
 
+    /// @dev Represents a user's deposit in the migration contract
     struct UserDeposit {
+        /// @dev Amount of XAR tokens deposited
         uint248 amount;
+        /// @dev Indicates if the user has made their first unlock withdrawal
         bool hasUnlockedOnce;
     }
 
@@ -49,6 +58,8 @@ contract XARMigration is Pausable, Ownable2Step {
         _pause();
     }
 
+    /// @notice Allows users to deposit XAR tokens
+    /// @param amount Amount of tokens to deposit
     function deposit(uint248 amount) external whenNotPaused {
         // slither-disable-next-line timestamp
         require(block.timestamp < DEPOSIT_DEADLINE, DepositClosed());
@@ -58,6 +69,9 @@ contract XARMigration is Pausable, Ownable2Step {
         xar.safeTransferFrom(msg.sender, address(this), amount);
     }
 
+    /// @notice Allows users to deposit XAR tokens to another user's account
+    /// @param user Address of the user to deposit tokens for
+    /// @param amount Amount of tokens to deposit
     function depositTo(address user, uint248 amount) external whenNotPaused {
         // slither-disable-next-line timestamp
         require(block.timestamp < DEPOSIT_DEADLINE, DepositClosed());
@@ -69,6 +83,7 @@ contract XARMigration is Pausable, Ownable2Step {
         xar.safeTransferFrom(msg.sender, address(this), amount);
     }
 
+    /// @notice Allows users to withdraw their AVAIL tokens based on the unlock schedule
     function withdraw() external whenNotPaused {
         // slither-disable-next-line timestamp
         require(block.timestamp >= FIRST_UNLOCK_AT, NotYet());
@@ -88,6 +103,8 @@ contract XARMigration is Pausable, Ownable2Step {
         }
     }
 
+    /// @notice Allows the governance contract to pause or unpause deposits and withdrawals
+    /// @param setPause Boolean indicating whether to pause or unpause
     function setPaused(bool setPause) external onlyOwner {
         if (setPause) {
             _pause();
@@ -96,6 +113,9 @@ contract XARMigration is Pausable, Ownable2Step {
         }
     }
 
+    /// @notice Allows the governance contract to withdraw funds after migration
+    /// @param token Address of token to withdraw
+    /// @param amount Amount of tokens to withdraw
     function drain(IERC20 token, uint256 amount) external onlyOwner {
         token.safeTransfer(msg.sender, amount);
     }
