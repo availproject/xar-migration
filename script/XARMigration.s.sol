@@ -14,7 +14,9 @@ contract XARMigrationScript is Script {
         address avail = vm.envAddress("AVAIL");
         address governance = vm.envAddress("GOVERNANCE");
         xarMigration = new XARMigration(IERC20(xar), IERC20(avail), governance);
-
+        IERC20(xar).approve(address(xarMigration), 8 ether);
+        xarMigration.deposit(4 ether);
+        xarMigration.depositTo(msg.sender, 4 ether);
         vm.stopBroadcast();
     }
 }
