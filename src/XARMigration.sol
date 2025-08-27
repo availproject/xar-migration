@@ -52,7 +52,7 @@ contract XARMigration is Pausable, Ownable2Step {
     error AlreadyWithdrawn();
 
     constructor(IERC20 newXar, IERC20 newAvail, address governance) Ownable(governance) {
-        require(newXar != IERC20(address(0)) && newAvail != IERC20(address(0)), ZeroAddress());
+        require(newXar != IERC20(address(0)) && newAvail != IERC20(address(0)), ZeroAddress()); // we skip governance address check because ownable enforces zero-address checks
         xar = newXar;
         avail = newAvail;
         _pause();
@@ -62,7 +62,7 @@ contract XARMigration is Pausable, Ownable2Step {
     /// @param amount Amount of tokens to deposit
     function deposit(uint248 amount) external whenNotPaused {
         // slither-disable-next-line timestamp
-        require(block.timestamp < DEPOSIT_DEADLINE, DepositClosed());
+        require(block.timestamp <= DEPOSIT_DEADLINE, DepositClosed());
         require(amount != 0, ZeroAmount());
         deposits[msg.sender] = UserDeposit(deposits[msg.sender].amount + amount, false);
         emit Deposit(msg.sender, amount);
@@ -74,7 +74,7 @@ contract XARMigration is Pausable, Ownable2Step {
     /// @param amount Amount of tokens to deposit
     function depositTo(address user, uint248 amount) external whenNotPaused {
         // slither-disable-next-line timestamp
-        require(block.timestamp < DEPOSIT_DEADLINE, DepositClosed());
+        require(block.timestamp <= DEPOSIT_DEADLINE, DepositClosed());
         require(amount != 0, ZeroAmount());
         require(user != address(0), ZeroAddress());
         UserDeposit memory userDeposit = deposits[user];

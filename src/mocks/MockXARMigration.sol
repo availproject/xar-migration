@@ -27,9 +27,9 @@ contract MockXARMigration is Pausable, Ownable2Step {
 
     uint256 private constant XAR_PER_AVAIL = 4;
     uint256 private constant FIRST_UNLOCK_RATIO = 2; // implies 1/2
-    uint256 private constant DEPOSIT_DEADLINE = 1756152000;
-    uint256 private constant FIRST_UNLOCK_AT = 1756188000;
-    uint256 private constant SECOND_UNLOCK_AT = 1756202400;
+    uint256 private constant DEPOSIT_DEADLINE = 1756238400;
+    uint256 private constant FIRST_UNLOCK_AT = 1756270800;
+    uint256 private constant SECOND_UNLOCK_AT = 1756281600;
     IERC20 public immutable xar;
     IERC20 public immutable avail;
 
