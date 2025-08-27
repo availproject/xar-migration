@@ -1,4 +1,4 @@
-name: CI
+name: Foundry CI
 
 on:
   push:
@@ -32,8 +32,24 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test -vvv
+          FOUNDRY_PROFILE=intense forge test -vvv
         id: test
+
+  coverage: 
+    name: Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Coverage
+        run: |
+          forge coverage
+        id: coverage
 
   gas-report:
     name: Gas report
@@ -46,7 +62,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
 
-      - name: Run Forge tests
+      - name: Gas report
         run: |
           forge test --gas-report
         id: gas-report
