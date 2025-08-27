@@ -25,8 +25,6 @@ contract XARMigrationTest is Test {
         avail = new MockERC20("AVAIL", "AVAIL");
         governance = makeAddr("governance");
         xarMigration = new XARMigration(IERC20(xar), IERC20(avail), governance);
-        vm.prank(governance);
-        xarMigration.setPaused(false);
     }
 
     function test_revertZeroAddress_constructor() public {

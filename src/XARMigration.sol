@@ -41,6 +41,7 @@ contract XARMigration is Pausable, Ownable2Step {
     // slither-disable-next-line naming-convention
     IERC20 public immutable AVAIL;
 
+    /// @dev Mapping of user addresses to their deposit information
     mapping(address => UserDeposit) public deposits;
 
     event Deposit(address indexed user, uint256 amount);
@@ -57,7 +58,6 @@ contract XARMigration is Pausable, Ownable2Step {
         require(xar != IERC20(address(0)) && avail != IERC20(address(0)), ZeroAddress()); // we skip governance address check because ownable enforces zero-address checks
         XAR = xar;
         AVAIL = avail;
-        _pause();
     }
 
     /// @notice Allows users to deposit XAR tokens

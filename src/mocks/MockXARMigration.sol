@@ -34,7 +34,7 @@ contract MockXARMigration is Pausable, Ownable2Step {
     IERC20 public immutable XAR;
     // slither-disable-next-line naming-convention
     IERC20 public immutable AVAIL;
-
+    
     mapping(address => UserDeposit) public deposits;
 
     event Deposit(address indexed user, uint256 amount);
