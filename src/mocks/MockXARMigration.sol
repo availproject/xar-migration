@@ -30,8 +30,10 @@ contract MockXARMigration is Pausable, Ownable2Step {
     uint256 private constant DEPOSIT_DEADLINE = 1756238400;
     uint256 private constant FIRST_UNLOCK_AT = 1756270800;
     uint256 private constant SECOND_UNLOCK_AT = 1756281600;
-    IERC20 public immutable xar;
-    IERC20 public immutable avail;
+    // slither-disable-next-line naming-convention
+    IERC20 public immutable XAR;
+    // slither-disable-next-line naming-convention
+    IERC20 public immutable AVAIL;
 
     mapping(address => UserDeposit) public deposits;
 
@@ -45,10 +47,10 @@ contract MockXARMigration is Pausable, Ownable2Step {
     error NotYet();
     error AlreadyWithdrawn();
 
-    constructor(IERC20 newXar, IERC20 newAvail, address governance) Ownable(governance) {
-        require(newXar != IERC20(address(0)) && newAvail != IERC20(address(0)), ZeroAddress());
-        xar = newXar;
-        avail = newAvail;
+    constructor(IERC20 xar, IERC20 avail, address governance) Ownable(governance) {
+        require(xar != IERC20(address(0)) && avail != IERC20(address(0)), ZeroAddress());
+        XAR = xar;
+        AVAIL = avail;
         _pause();
     }
 
@@ -58,7 +60,7 @@ contract MockXARMigration is Pausable, Ownable2Step {
         require(amount != 0, ZeroAmount());
         deposits[msg.sender] = UserDeposit(deposits[msg.sender].amount + amount, false);
         emit Deposit(msg.sender, amount);
-        xar.safeTransferFrom(msg.sender, address(this), amount);
+        XAR.safeTransferFrom(msg.sender, address(this), amount);
     }
 
     function depositTo(address user, uint248 amount) external whenNotPaused {
@@ -69,7 +71,7 @@ contract MockXARMigration is Pausable, Ownable2Step {
         UserDeposit memory userDeposit = deposits[user];
         deposits[user] = UserDeposit(userDeposit.amount + amount, false);
         emit Deposit(user, amount);
-        xar.safeTransferFrom(msg.sender, address(this), amount);
+        XAR.safeTransferFrom(msg.sender, address(this), amount);
     }
 
     function withdraw() external whenNotPaused {
@@ -81,13 +83,13 @@ contract MockXARMigration is Pausable, Ownable2Step {
         if (block.timestamp >= SECOND_UNLOCK_AT) {
             deposits[msg.sender] = UserDeposit(0, false);
             emit Withdraw(msg.sender, userDeposit.amount);
-            avail.safeTransfer(msg.sender, userDeposit.amount / XAR_PER_AVAIL);
+            AVAIL.safeTransfer(msg.sender, userDeposit.amount / XAR_PER_AVAIL);
         } else {
             require(!userDeposit.hasUnlockedOnce, AlreadyWithdrawn());
             uint256 unlockAmount = userDeposit.amount / FIRST_UNLOCK_RATIO;
             deposits[msg.sender] = UserDeposit(userDeposit.amount - uint248(unlockAmount), true);
             emit Withdraw(msg.sender, unlockAmount);
-            avail.safeTransfer(msg.sender, unlockAmount / XAR_PER_AVAIL);
+            AVAIL.safeTransfer(msg.sender, unlockAmount / XAR_PER_AVAIL);
         }
     }
 
