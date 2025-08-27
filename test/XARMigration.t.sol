@@ -112,7 +112,7 @@ contract XARMigrationTest is Test {
         vm.warp(when);
         vm.expectRevert(XARMigration.ZeroAddress.selector);
         xarMigration.depositTo(address(0), amount);
-    } 
+    }
 
     function test_depositTo(uint248 amount, address someone) public {
         vm.assume(amount != 0 && someone != address(0));
@@ -302,7 +302,7 @@ contract XARMigrationTest is Test {
         address user = makeAddr("user");
         vm.startPrank(user);
         vm.expectRevert(Pausable.EnforcedPause.selector);
-        xarMigration.deposit(amount);     
+        xarMigration.deposit(amount);
         vm.expectRevert(Pausable.EnforcedPause.selector);
         xarMigration.depositTo(user, amount);
         vm.expectRevert(Pausable.EnforcedPause.selector);
