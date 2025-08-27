@@ -67,7 +67,7 @@ contract XARMigration is Pausable, Ownable2Step {
         // slither-disable-next-line timestamp
         require(block.timestamp <= DEPOSIT_DEADLINE, DepositClosed());
         require(amount != 0, ZeroAmount());
-        deposits[msg.sender] = UserDeposit(deposits[msg.sender].amount + amount, false);
+        deposits[msg.sender].amount += amount;
         emit Deposit(msg.sender, amount);
         XAR.safeTransferFrom(msg.sender, address(this), amount);
     }
@@ -80,8 +80,7 @@ contract XARMigration is Pausable, Ownable2Step {
         require(block.timestamp <= DEPOSIT_DEADLINE, DepositClosed());
         require(amount != 0, ZeroAmount());
         require(user != address(0), ZeroAddress());
-        UserDeposit memory userDeposit = deposits[user];
-        deposits[user] = UserDeposit(userDeposit.amount + amount, false);
+        deposits[user].amount += amount;
         emit Deposit(user, amount);
         XAR.safeTransferFrom(msg.sender, address(this), amount);
     }
